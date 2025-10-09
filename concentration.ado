@@ -64,8 +64,8 @@ program define concentration
 
 			lab var decile_`y' "Decile `y'"
 			keep decile* con_* `varlist'
-			lab define decile_lbl 1"Poorest" 10"Richest" 11"National"
-			lab var decile_`y' decile_lbl
+			lab define decile_lbl 1"Low-income" 10"High-income" 11"National", replace 
+			lab val decile_`y' decile_lbl
 
 	* Absolute value
 		foreach v in `varlist'{

@@ -5,7 +5,7 @@
 cap prog drop vatpush
 cap set matastrict off
 program define vatpush, rclass
-	version 14.2
+	version 16.0
 	#delimit ;
 	syntax varlist (min=2 numeric) [if] [in], 
 		EXEMpt(varlist max=1 numeric)
@@ -33,7 +33,6 @@ program define vatpush, rclass
 	
 	replace `gen'=0   if cp==0 // *Price control sectors do not have indirect effect 
 	lab var `gen' "Indirect shock"
-	*drop cp
 end 
 
 mata:

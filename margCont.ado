@@ -1,13 +1,13 @@
 cap program drop margCont 
 program define margCont
 	version 16.0
-	syntax[, income(varlist) taxes(varlist) included(varlist) excluded(varlist) pcweight(varlist) data(string) pline(string) positivetax exportfile(string) exportsheet(string) restore]
+	syntax[, ginDef(varname) povDef(varname) income(varname) taxes(varlist) included(varlist) excluded(varlist) pcweight(varname) data(string) pline(varname) positivetax exportfile(string) exportsheet(string) restore]
 
 	if "`restore'" == "restore"{
 		preserve 
 	}
 		loc varlist `included' `excluded'
-		loc keeplist `varlist' `income' `pcweight' `pline'
+		loc keeplist `varlist' `income' `povDef' `ginDef' `pcweight' `pline'
 		disp "`keeplist'" 
 		keep `keeplist'	
 
@@ -31,56 +31,104 @@ program define margCont
 			} 		
 		} 
 
+		if "`ginDef'" != ""{
+			foreach v of varlist `varlist' `income'{
+				disp "Deflating for the Gini calculations."
+				g `v'_def = `v'/`ginDef'
+			}
+		}
+		if "`povDef'" != ""{
+			foreach v of varlist `varlist' `income'{
+				disp "Deflating for the Poverty calculations."
+				g `v'_def = `v'/`povDef'
+			}
+		}
+
 * Marginal contribution 
-	loc mcList ""
-	foreach y in `income'{
-		foreach i in `included'{
-			di "`y' less `i'"
-			g `y'_`i' = `y' - `i'
-			lab var `y'_`i' "Cons. inc. w/o $`i'" 
-		}
+	loc y `income'
+	foreach i in `included'{
+		di "`y' less `i'"
+		g `y'_`i' = `y' - `i'
+		lab var `y'_`i' "Income w/o $`i'" 
 		
-		foreach i in `excluded'{
-			di "`y' plus `i'"
-			g `y'_`i' = `y' + `i'
-			lab var `y'_`i' "Cons. inc. w. $`i'"
+		if "`ginDef'" != "" | "`povDef'" != ""{
+			g `y'_`i'_def = `y'_def - `i'_def
+			lab var `y'_`i'_def "Income w/o `i' (defl.)" 
 		}
+	}
+
+	foreach i in `excluded'{
+		di "`y' plus `i'"
+		g `y'_`i' = `y' + `i'
+		lab var `y'_`i' "Income w. $`i'"
+		
+		if "`ginDef'" != "" | "`povDef'" != ""{
+			g `y'_`i'_def = `y'_def + `i'_def
+			lab var `y'_`i' "Income w. `i' (defl.)"
+		}
+	}
+
+	// Calculate inequality and poverty for the extended income concepts
 	
-		// Calculate inequality and poverty for the extended income concepts
+	if "`ginDef'" != ""{
+		qui ineqdeco `y'_def [w = `pcweight']
+		g gi_`y' = r(gini)*100
+		foreach i in `varlist'{
+			qui ineqdeco `y'_`i'_def [w = `pcweight']
+			g gi_`y'_`i' = r(gini)*100
+		}
+	}
+	else{
 		qui ineqdeco `y' [w = `pcweight']
 		g gi_`y' = r(gini)*100
 		foreach i in `varlist'{
 			qui ineqdeco `y'_`i' [w = `pcweight']
 			g gi_`y'_`i' = r(gini)*100
-		} 
+		}
+	} 
 		
+	if "`povDef'" != ""{
+		qui povdeco `y'_def [w = `pcweight'], varpl(`pline')
+		g ph_`pline'_`y' = r(fgt0)*100
+		g pg_`pline'_`y' = r(fgt1)*100
+
+		foreach i in `varlist'{
+			qui povdeco `y'_`i'_def [w = `pcweight'], varpl(`pline')   
+			g ph_`y'_`i' = r(fgt0)*100
+			g pg_`y'_`i' = r(fgt1)*100
+		} 
+	}
+	else{
 		qui povdeco `y' [w = `pcweight'], varpl(`pline')
 		g ph_`pline'_`y' = r(fgt0)*100
 		g pg_`pline'_`y' = r(fgt1)*100
-	
+
 		foreach i in `varlist'{
 			qui povdeco `y'_`i' [w = `pcweight'], varpl(`pline')   
 			g ph_`y'_`i' = r(fgt0)*100
 			g pg_`y'_`i' = r(fgt1)*100
 		} 
+	}
 							
 		* Calculate marginal contributions as the value WITHOUT the variable less the value WITH the variable 
-		foreach i in `included'{
-			g mcgi_`y'_`i' = gi_`y'_`i' - gi_`y'
-			g mcph_`y'_`i' = ph_`y'_`i' - ph_`pline'_`y'
-			g mcpg_`y'_`i' = pg_`y'_`i' - pg_`pline'_`y'
-		} 
+		if "`included'" != ""{
+			foreach i in `included'{
+				g mcgi_`y'_`i' = gi_`y'_`i' - gi_`y'
+				g mcph_`y'_`i' = ph_`y'_`i' - ph_`pline'_`y'
+				g mcpg_`y'_`i' = pg_`y'_`i' - pg_`pline'_`y'
+			} 	
+		}
 
 		* For education and health
-		foreach i in `excluded'{
-			g mcgi_`y'_`i' = gi_`y' - gi_`y'_`i'
-			g mcph_`y'_`i' = ph_`pline'_`y' - ph_`y'_`i'
-			g mcpg_`y'_`i' = pg_`pline'_`y' - pg_`y'_`i'
-		} 
-		loc mcList `mcList' mcgi_`y'_ mcph_`y'_ mcpg_`y'_
-	} //incomeList
-	disp "`mcList'"
-
+		if "`excluded'" != ""{
+			foreach i in `excluded'{
+				g mcgi_`y'_`i' = gi_`y' - gi_`y'_`i'
+				g mcph_`y'_`i' = ph_`pline'_`y' - ph_`y'_`i'
+				g mcpg_`y'_`i' = pg_`pline'_`y' - pg_`y'_`i'
+			} 
+		}
+		loc mcList mcgi_`y'_ mcph_`y'_ mcpg_`y'_
+		disp "`mcList'"
 
 	//reshape long so that you have the variable on the rows, and the type of indicator on the columns 
 	g id = _n  

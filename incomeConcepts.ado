@@ -36,10 +36,13 @@ prog def incomeConcepts
 
 		if "`penlist'" != ""{
 			cap confirm variable pen_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`penlist'")
+			if _rc == 0 & "`penlist'" != "pen_`o'"{
 				drop pen_`o'
 			}
-			egen pen_`o' = rowtotal(`penlist')
+			if "`penlist'" != "pen_`o'"{
+				egen pen_`o' = rowtotal(`penlist')
+			}
 		}
 		else{
 			g pen_`o' = 0
@@ -47,10 +50,13 @@ prog def incomeConcepts
 		loc totlist `totlist' pen_`o'
 		if "`conlist'" != ""{
 			cap confirm variable con_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`conlist'")
+			if _rc == 0 & "`conlist'" != "con_`o'"{
 				drop con_`o'
 			}
-			egen con_`o' = rowtotal(`conlist')
+			if "`conlist'" != "con_`o'"{
+				egen con_`o' = rowtotal(`conlist')
+			}
 		}
 		else{
 			g con_`o' = 0
@@ -59,10 +65,13 @@ prog def incomeConcepts
 
 		if "`dtrlist'" != ""{
 			cap confirm variable dtr_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`dtrlist'")
+			if _rc == 0 & "`dtrlist'" != "dtr_`o'"{
 				drop dtr_`o'
 			}
-			egen dtr_`o' = rowtotal(`dtrlist')
+			if "`dtrlist'" != "dtr_`o'"{
+				egen dtr_`o' = rowtotal(`dtrlist')
+			}
 		}
 		else{
 			g dtr_`o' = 0
@@ -71,10 +80,13 @@ prog def incomeConcepts
 
 		if "`dtxlist'" != ""{
 			cap confirm variable dtx_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`dtxlist'")
+			if _rc == 0 & "`dtxlist'" != "dtx_`o'"{
 				drop dtx_`o'
 			}
-			egen dtx_`o' = rowtotal(`dtxlist')
+			if "`dtxlist'" != "dtx_`o'"{
+				egen dtx_`o' = rowtotal(`dtxlist')
+			}
 		}
 		else{
 			g dtx_`o' = 0
@@ -83,10 +95,13 @@ prog def incomeConcepts
 
 		if "`itxlist'" != ""{
 			cap confirm variable itx_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`itxlist'")
+			if _rc == 0 & "`itxlist'" != "itx_`o'"{
 				drop itx_`o'
 			}
-			egen itx_`o' = rowtotal(`itxlist')
+			if "`itxlist'" != "itx_`o'"{
+				egen itx_`o' = rowtotal(`itxlist')
+			}
 		}
 		loc totlist `totlist' itx_`o' 
 		else{
@@ -94,10 +109,13 @@ prog def incomeConcepts
 		}
 		if "`sublist'" != ""{
 			cap confirm variable sub_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`sublist'")
+			if _rc == 0 & "`sublist'" != "sub_`o'"{
 				drop sub_`o'
 			}
-			egen sub_`o' = rowtotal(`sublist')
+			if "`sublist'" != "sub_`o'"{
+				egen sub_`o' = rowtotal(`sublist')
+			}
 			
 		}
 		else{
@@ -106,10 +124,13 @@ prog def incomeConcepts
 		loc totlist `totlist' sub_`o' 
 		if "`edulist'" != ""{
 			cap confirm variable edu_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`edulist'")
+			if _rc == 0 & "`edulist'" != "edu_`o'"{
 				drop edu_`o'
 			}
-			egen edu_`o' = rowtotal(`edulist')
+			if "`edulist'" != "edu_`o'"{
+				egen edu_`o' = rowtotal(`edulist')
+			}
 		}
 		else{
 			g edu_`o' = 0
@@ -117,10 +138,13 @@ prog def incomeConcepts
 		loc totlist `totlist' edu_`o'
 		if "`hltlist'" != ""{
 			cap confirm variable hlt_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`hltlist'")
+			if _rc == 0 & "`hltlist'" != "hlt_`o'"{
 				drop hlt_`o'
 			}
-			egen hlt_`o' = rowtotal(`hltlist')
+			if "`hltlist'" != "hlt_`o'"{
+				egen hlt_`o' = rowtotal(`hltlist')
+			}
 		}
 		else{
 			g hlt_`o' = 0
@@ -128,10 +152,13 @@ prog def incomeConcepts
 		loc totlist `totlist' hlt_`o' 
 		if "`edufeelist'" != ""{
 			cap confirm variable fee_educ_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`edufeelist'")
+			if _rc == 0 if "`edufeelist'" != "fee_educ_`o'"{
 				drop fee_educ_`o'
 			}
-			egen fee_educ_`o' = rowtotal(`edufeelist') 
+			if "`edufeelist'" != "fee_educ_`o'"{
+				egen fee_educ_`o' = rowtotal(`edufeelist')
+			} 
 		}
 		else{
 			g fee_educ_`o' = 0
@@ -139,10 +166,13 @@ prog def incomeConcepts
 		loc totlist `totlist' fee_educ_`o'
 		if "`hltfeelist'" != ""{
 			cap confirm variable fee_hlth_`o'
-			if _rc == 0{
+			local num_unique = wordcount("`hltfeelist'")
+			if _rc == 0 if "`hltfeelist'" != "fee_hlth_`o'"{
 				drop fee_hlth_`o'
 			}
-			egen fee_hlth_`o' = rowtotal(`hltfeelist') 
+			if "`hltfeelist'" != "fee_hlth_`o'"{
+				egen fee_hlth_`o' = rowtotal(`hltfeelist')
+			} 
 		}
 		else{
 			g fee_hlth_`o' = 0
@@ -264,9 +294,7 @@ prog def incomeConcepts
 	ren (*_`o'_`n') (*_`n')	
 	
 	g net_cash_`n' = dtr_`n' - dtx_`n' - itx_`n' + sub_`n' 
-	replace net_cash_`n' = 0 if net_cash_`n' < 0
 	g net_totl_`n' = net_cash_`n' + edu_`n' - fee_educ_`n' + hlt_`n' - fee_hlth_`n' 
-	replace net_totl_`n' = 0 if net_totl_`n' < 0
 
 	loc newvarlist
 	foreach v of varlist `aggregate' *_`n'{

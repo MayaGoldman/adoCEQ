@@ -4,13 +4,17 @@
 cap program drop incidence 
 program define incidence
 	version 16.0
-	syntax varlist(min = 1) [, rerank quantiles(integer 10) pcweight(varname) income(varlist) data(string) exportfile(string) exportsheet(string) incomeRank(string) restore]
+	syntax varlist(min = 1) [, rerank quantiles(integer 10) pcweight(varname) income(varlist) taxes(varlist) data(string) exportfile(string) exportsheet(string) incomeRank(string) restore]
 
 	if "`restore'" == "restore"{
 			preserve 
 	}  
 		loc keeplist `pcweight' `varlist' `income'
 		keep `keeplist'
+
+		foreach v in `taxes'{
+			replace `v' = -`v' 
+		}
 
 		foreach v in `keeplist' {
 			assert !mi(`v')
@@ -27,21 +31,26 @@ program define incidence
 		loc q "`quantiles'"
 		loc y `income'
 		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`y')
-		di in red "{You have chosen to rank by `y'}"
-		collapse (sum) `varlist' `y'  [pw=`pcweight'], by(decile_`y')
 		
 	if "`rerank'" != "rerank"{
 		loc y `incomeRank'
 		cap drop decile_`y'
 		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`y')
-		di in red "{You have chosen to rank by `incomeRank'}"
-		collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`incomeRank')
-	}
 		
+	}
+		di in red "{You have chosen to rank by `y'}"
+		collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`y')
 
 		* Incidence
+		insobs 1 
+		replace decile_`y' = 11 if decile_`y' == . 
+
+		qui sum `y'
+		replace `y' = r(sum) if `y' == . & decile == 11
 		foreach i in `varlist'{
-			
+			qui sum `i'
+			replace `i' = r(sum) if `i' == . & decile == 11
+
 			gen inc_`y'_`i' = (`i'/`y')*100
 
 			loc j = "``i'_lbl'"
@@ -49,7 +58,10 @@ program define incidence
 			lab var inc_`y'_`i' "`j'"
 		}
 		lab var decile_`y' "Decile `y'"
-		keep decile* inc_*      
+		keep decile* inc_* 
+
+		lab define decile_lbl 1"Low-income" 10"High-income" 11"National", replace 
+		lab val decile_`y' decile_lbl     
 	
 	* Save and export the data
 		if "`data'" != ""{
