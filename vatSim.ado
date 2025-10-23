@@ -1,32 +1,38 @@
 cap program drop vatSim 
 program define vatSim
 version 16.0
-	syntax [, collapse hhid(varname) dir(varname) ind(varname) rate(real 0) itemID(varname) infShare(varname) exemptions(varname) purchases(varname) hhweight(varname) dataout(string)]
+	syntax [, collapse hhid(varname) bDir(varname) dir(varname) bInd(varname) ind(varname) rate(real 0) itemID(varname) infShare(varname) exemptions(varname) purchases(varname) hhweight(varname) dataout(string)]
  
  **************************************************************************************
  * Step 5: Calculate VAT 
  **************************************************************************************
-
+preserve
 		assert !mi(`ind') & `ind' >= 0 
-		assert !mi(`dir') & `dir' >= 0 
+		assert !mi(`dir') & `dir' >= 0
 
-		sum sim0_vatRateDir `dir' sim0_vatRateInd `ind'
+		if "`bInd'" == "" {
+			loc bInd `ind'
+		}
+		if "`bDir'" == ""{	
+			loc bDir `dir'
+		} 
+
+		sum `bDir' `dir' `bInd' `ind'
 
 		* Back out formal and informal purchases, gross of VAT
-		cap drop frm_purc frm_ex_purc frm_nx_purc inf_purc inf_ex_purc inf_nx_purc 
 		
 		g frm_purc = `purchases'*(1-`infShare')
-		g frm_ex_purc = `purchases'*(1-`infShare')*exempted 
-		g frm_nx_purc = `purchases'*(1-`infShare')*(1-exempted)
+		g frm_ex_purc = `purchases'*(1-`infShare')*`exemptions' 
+		g frm_nx_purc = `purchases'*(1-`infShare')*(1-`exemptions')
 
 		g inf_purc = `purchases'*`infShare'
-		g inf_ex_purc = `purchases'*(`infShare')*exempted 
-		g inf_nx_purc = `purchases'*(`infShare')*(1-exempted)
+		g inf_ex_purc = `purchases'*(`infShare')*`exemptions' 
+		g inf_nx_purc = `purchases'*(`infShare')*(1-`exemptions')
 
 		sum frm_ex_purc frm_nx_purc inf_ex_purc inf_nx_purc
 
-		g frm_purc_net_vat = frm_purc/ ((1 + sim0_vatRateDir) * (1 + sim0_vatRateInd))   
-		g inf_purc_net_vat = inf_purc / (1 + sim0_vatRateInd) 
+		g frm_purc_net_vat = frm_purc/ ((1 + `bDir') * (1 + `bInd'))   
+		g inf_purc_net_vat = inf_purc / (1 + `bInd') 
 		assert frm_purc_net_vat >= 0 & inf_purc_net_vat >= 0 & frm_purc_net_vat <= frm_purc & inf_purc_net_vat <= inf_purc
 
 		* Calculate pre-VAT purchases for calculating excises
@@ -49,8 +55,8 @@ version 16.0
 		* Checks
 		loc j = 0
 		foreach i in nx ex{
-			g frm_`i'_vatrate = itx_vatx_frml_item/frm_purc if exempted == `j'
-			g inf_`i'_vatrate = itx_vatx_infr_item/inf_purc if exempted == `j'
+			g frm_`i'_vatrate = itx_vatx_frml_item/frm_purc if `exemptions' == `j'
+			g inf_`i'_vatrate = itx_vatx_infr_item/inf_purc if `exemptions' == `j'
 			loc ++j
 		}
 		sum frm_ex_vatrate frm_nx_vatrate inf_ex_vatrate inf_nx_vatrate [w=`hhweight']
@@ -88,7 +94,7 @@ version 16.0
 
 			save `dataout', replace
 	}
-
+restore
 
 end 
 
