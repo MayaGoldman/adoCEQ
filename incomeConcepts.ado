@@ -6,7 +6,8 @@ prog def incomeConcepts
 
 
 	loc fisclist `penlist' `conlist' `dtrlist' `dtxlist' `itxlist' `sublist' `edulist' `hltlist' `edufeelist' `hltfeelist' `extravarlist'
-	foreach v in `totlist'{
+	loc fiscinclist `fisclist' `aggregate'
+	foreach v in `fiscinclist'{
 		recode `v' (.=0)
 	}
 
@@ -15,11 +16,13 @@ prog def incomeConcepts
 	disp `f'
 
 	if `f' != 1{
-		foreach v in `totlist'{
+		foreach v in `fiscinclist'{
+			disp "`v'"
 			replace `v' = `v'*`f'
 		}
 		disp in red "{Variables are now annual}"
 	}
+
 
 * Generate the totals for each category
 
@@ -31,7 +34,7 @@ prog def incomeConcepts
 		loc n "`newsuffix'"
 		disp "`n'"
 		loc o "`oldsuffix'"
-		disp "`o'"
+		disp "`o'"	
 	} 
 
 		if "`penlist'" != ""{
@@ -200,7 +203,7 @@ prog def incomeConcepts
 	}
 	else if "`scaler'" != ""{
 		disp in red "{Scaler variable was supplied. Dividing by `scaler'.}"
-		foreach v in `aggregate' `fisclist' `totlist'{
+		foreach v in `fiscinclist' `totlist'{
 			cap drop `v'_`n' 
 			g `v'_`n' = `v'/`scaler'
 
@@ -216,9 +219,9 @@ prog def incomeConcepts
 		disp in red "{Working backwards from Disposable income}"
 		cap confirm variable yd_`n'
 		if _rc == 0{
-			drop yd_`n' yd_`o'
+			drop yd_`n' 
 		}
-		g yd_`n' = `aggregate'_`n'
+		g yd_`n' = `aggregate'_`n' //generate a disposable income concept equal to yd_hh_pc
 		g yn_`n' 	= yd_`n' - dtr_`o'_`n' 
 		replace yn_`n' = 0 if yn_`n' <= 0
 		g yg_`n' 	= yd_`n' + dtx_`o'_`n' 
@@ -297,7 +300,7 @@ prog def incomeConcepts
 	g net_totl_`n' = net_cash_`n' + edu_`n' - fee_educ_`n' + hlt_`n' - fee_hlth_`n' 
 
 	loc newvarlist
-	foreach v of varlist `aggregate' *_`n'{
+	foreach v of varlist *_`n'{
 		loc newvarlist `newvarlist' `v'
 	}
 	disp "`newvarlist'"
@@ -327,71 +330,71 @@ prog def incomeConcepts
 	cap lab var net_cash_`n'			"Net cash benefit"
 
 if "`globals'" == "globals"{
-	global inclist ym_pc yp_pc yn_pc yg_pc yd_pc ynd_pc yc_pc yf_pc 
+	global inclist ym_`n' yp_`n' yn_`n' yg_`n' yd_`n' ynd_`n' yc_`n' yf_`n' 
 	local newlist ""
 	foreach v in `penlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global penlist `newlist'
 	}
 	local newlist ""
 	foreach v in `conlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global conlist `newlist'
 	}
 	local newlist ""
 	foreach v in `dtrlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global dtrlist `newlist'
 	}
 	local newlist ""
 	foreach v in `dtxlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global dtxlist `newlist'
 	}
 	local newlist ""
 	foreach v in `itxlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global itxlist `newlist'
 	}
 	local newlist ""
 	foreach v in `sublist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global sublist `newlist'
 	}
 	local newlist ""
 	foreach v in `edulist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global edulist `newlist'
 	}
 	local newlist ""
 	foreach v in `hltlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global hltlist `newlist'
 	}
 	local newlist ""
 	foreach v in `edufeelist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global edufeelist `newlist'
 	}
 	local newlist ""
 	foreach v in `hltfeelist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global hltfeelist `newlist'
 	}
 	local newlist ""
 	foreach v in `extravarlist'{
 		local base = subinstr("`v'", "_hh", "", .)
-		local newlist "`newlist' `base'_pc"
+		local newlist "`newlist' `base'_`n'"
 		global extravarlist `newlist'
 	}
 	disp in red "Globals saved."
