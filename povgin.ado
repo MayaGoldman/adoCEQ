@@ -94,7 +94,7 @@ disp "`povlines'"
 			foreach var of varlist ph* pg*{
 				replace `var' = `var'[1] - `var'[`k'] if `var' == . 
 			}
-			lab define income_lbl 1 "Market + pens." 2"Net market" 3"Gross" 4"Disposable" 5"Consumable" 6"Final" 7"Total effect", replace
+			lab define income_lbl 1 "Market" 2"Market + pens." 3"Net market" 4"Gross" 5"Disposable" 6"Net disposable" 7"Consumable" 8"Final" 9"Total effect", replace
 			lab val income income_lbl
 
 		* Generate a marker variable for the simulation 
