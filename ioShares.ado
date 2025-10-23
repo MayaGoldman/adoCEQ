@@ -1,7 +1,7 @@
 cap program drop ioShares 
 program define ioShares
 version 16.0
-	syntax [, purchases(varname) exemptsh(varname) zerosh(varname) fix(varname) ioID(varname) hhweight(varname) dataout(string)] 
+	syntax [, purchases(varname) exemptsh(varname) zerosh(varname) fix(varname) ioID(varname) hhweight(varname) drop missing] 
 
 ************************************************************************************** 
 * Step 1: Calculate shares (standard, exempt etc.), by IO sector
@@ -15,8 +15,6 @@ version 16.0
 		g nx_purc = `purchases'*(1-`exemptsh') // non-exempted purchases
 		g zx_purc = `purchases'*`zerosh' 	//zero-rated purchases
 
-
-
 		*** Checks
 			assert  !mi(ex_purc) & !mi(nx_purc) 
 			tempvar sum
@@ -25,8 +23,6 @@ version 16.0
 			assert `sum' == `purchases' 
 		***
 		drop __000*
-		save `dataout', replace //Save the dataset at the full hh-item level before collapsing 
-
 
 	* Collapse to calculate exempted and zero-rated shares at the IO sector level 
 
@@ -62,6 +58,35 @@ version 16.0
 			assert !mi(nx_iosh) & !mi(ex_iosh) 
 		***
 
-		drop purc_ex purc_nx purc_zx
+
+if "`missing'" == "missing"{
+	* Add in placeholders for missing sectors (these are needed for the indirect VAT rates to be accurately calculated)
+	qui sum sector 
+	loc max = r(max)
+	disp `max'
+	cap drop missingSector
+	g missingSector = 0 
+	forval i = 1/`max'{
+		disp in red "Sector `i'"
+		count if sector == `i'
+		loc IOcount = r(N)
+		disp `IOcount'
+		if `IOcount' == 0{
+			disp in red "Sector `i' is missing"
+			expand 2 in l, gen(missingSector`i')  
+			replace sector = `i' if missingSector`i' == 1
+			replace missingSector = 1 if missingSector`i' == 1
+			cap drop missingSector`i'
+		}
+	}
+	foreach var in ex_purc zx_purc nx_purc purc{
+		replace `var' = 0 if missingSector == 1 & `var' != 0  
+	}
+}
+
+if "`drop'" == "drop"{
+	drop ex_purc nx_purc zx_purc
+}
+	
 end
 

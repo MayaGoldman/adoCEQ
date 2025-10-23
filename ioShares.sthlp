@@ -3,7 +3,7 @@
 {title:ioShares — Calculates the share of each IO sector that is exempt, or zero-rated.}
 
 {phang}
-{cmd:ioShares} , {it:purchases(varname) exemptsh(varname) zerosh(varname) fix(varname) ioID(varname) hhweight(varname) dataout(string)}
+{cmd:ioShares} , {it:purchases(varname) exemptsh(varname) zerosh(varname) fix(varname) ioID(varname) hhweight(varname) missing}
 
 {title:Description}
 {phang}
@@ -30,7 +30,7 @@ Calculates the share of each IO sector that is exempt, or zero-rated, and saves 
 {opt hhweight(varname)} — Household weights. 
 
 {phang}
-{opt dataout(string)} — Specify the file-path and name to save the household-level dataset. 
+{opt missing} — Add rows for missing IO sectors into the data. 
 
 {title:Examples}
 {phang}
