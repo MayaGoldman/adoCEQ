@@ -148,6 +148,7 @@ program define vatmat, rclass
 	*replace multi_col=1-`pexempt' if exempted==0
 
 	replace ex_io=`exempt' if ex_io==.
+	replace ex_io = 0 if `fix' == 1
 	replace `pzero' = 0 if `exempt' == 1
 	assert !mi(`pzero')
 
@@ -155,6 +156,7 @@ program define vatmat, rclass
 	foreach var of varlist sector_*{
 		*local factor = multi_col[`i']
 		*replace `var' = `var'*`factor'
+		if `fix'==1 in `i' local exm = "Not exempt"
 		if ex_io==1 in `i' local exm = "Exempt"
 		if ex_io==0 in `i' local exm = "Not exempt"
 		local sect = `sector'[`i']
