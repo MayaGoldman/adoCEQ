@@ -40,6 +40,7 @@ preserve
 		assert vatRateInd >= 0 		
 		lab var vatRateInd "Indirect VAT rate"
 		
+		loc x = `rate'*100
 		ren vatRateInd vatRateInd_`x'
 		save `dataout', replace
 
