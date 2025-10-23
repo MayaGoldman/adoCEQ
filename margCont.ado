@@ -46,25 +46,28 @@ program define margCont
 
 * Marginal contribution 
 	loc y `income'
+	loc x = substr("`y'", 1, 2)
 	foreach i in `included'{
+		loc z = substr("`i'", 1, strlen("`i'") - 3)
 		di "`y' less `i'"
-		g `y'_`i' = `y' - `i'
-		lab var `y'_`i' "Income w/o $`i'" 
+		g `x'_`z' = `y' - `i'
+		lab var `x'_`z' "Income w/o $`i'" 
 		
 		if "`ginDef'" != "" | "`povDef'" != ""{
-			g `y'_`i'_def = `y'_def - `i'_def
-			lab var `y'_`i'_def "Income w/o `i' (defl.)" 
+			g `x'_`z'_d = `y'_def - `i'_def
+			lab var `x'_`z'_d "Income w/o `i' (defl.)" 
 		}
 	}
 
 	foreach i in `excluded'{
+		loc z = substr("`i'", 1, strlen("`i'") - 3)
 		di "`y' plus `i'"
-		g `y'_`i' = `y' + `i'
-		lab var `y'_`i' "Income w. $`i'"
+		g `x'_`z' = `y' + `i'
+		lab var `x'_`z' "Income w. $`i'"
 		
 		if "`ginDef'" != "" | "`povDef'" != ""{
-			g `y'_`i'_def = `y'_def + `i'_def
-			lab var `y'_`i' "Income w. `i' (defl.)"
+			g `x'_`z'_d = `y'_def + `i'_def
+			lab var `x'_`z'_d "Income w. `i' (defl.)"
 		}
 	}
 
@@ -72,73 +75,80 @@ program define margCont
 	
 	if "`ginDef'" != ""{
 		qui ineqdeco `y'_def [w = `pcweight']
-		g gi_`y' = r(gini)*100
+		g gi_`x' = r(gini)*100
 		foreach i in `varlist'{
+			loc z = substr("`i'", 1, strlen("`i'") - 3)
 			qui ineqdeco `y'_`i'_def [w = `pcweight']
-			g gi_`y'_`i' = r(gini)*100
+			g gi_`x'_`z' = r(gini)*100
 		}
 	}
 	else{
 		qui ineqdeco `y' [w = `pcweight']
-		g gi_`y' = r(gini)*100
+		g gi_`x' = r(gini)*100
 		foreach i in `varlist'{
-			qui ineqdeco `y'_`i' [w = `pcweight']
-			g gi_`y'_`i' = r(gini)*100
+			loc z = substr("`i'", 1, strlen("`i'") - 3)
+			qui ineqdeco `x'_`z' [w = `pcweight']
+			g gi_`x'_`z' = r(gini)*100
 		}
 	} 
 		
 	if "`povDef'" != ""{
 		qui povdeco `y'_def [w = `pcweight'], varpl(`pline')
-		g ph_`pline'_`y' = r(fgt0)*100
-		g pg_`pline'_`y' = r(fgt1)*100
+		g ph_`pline'_`x' = r(fgt0)*100
+		g pg_`pline'_`x' = r(fgt1)*100
 
 		foreach i in `varlist'{
+			loc z = substr("`i'", 1, strlen("`i'") - 3)
 			qui povdeco `y'_`i'_def [w = `pcweight'], varpl(`pline')   
-			g ph_`y'_`i' = r(fgt0)*100
-			g pg_`y'_`i' = r(fgt1)*100
+			g ph_`x'_`z' = r(fgt0)*100
+			g pg_`x'_`z' = r(fgt1)*100
 		} 
 	}
 	else{
 		qui povdeco `y' [w = `pcweight'], varpl(`pline')
-		g ph_`pline'_`y' = r(fgt0)*100
-		g pg_`pline'_`y' = r(fgt1)*100
+		g ph_`pline'_`x' = r(fgt0)*100
+		g pg_`pline'_`x' = r(fgt1)*100
 
 		foreach i in `varlist'{
-			qui povdeco `y'_`i' [w = `pcweight'], varpl(`pline')   
-			g ph_`y'_`i' = r(fgt0)*100
-			g pg_`y'_`i' = r(fgt1)*100
+			loc z = substr("`i'", 1, strlen("`i'") - 3)
+			qui povdeco `x'_`z' [w = `pcweight'], varpl(`pline')   
+			g ph_`x'_`z' = r(fgt0)*100
+			g pg_`x'_`z' = r(fgt1)*100
 		} 
 	}
 							
 		* Calculate marginal contributions as the value WITHOUT the variable less the value WITH the variable 
 		if "`included'" != ""{
 			foreach i in `included'{
-				g mcgi_`y'_`i' = gi_`y'_`i' - gi_`y'
-				g mcph_`y'_`i' = ph_`y'_`i' - ph_`pline'_`y'
-				g mcpg_`y'_`i' = pg_`y'_`i' - pg_`pline'_`y'
+				loc z = substr("`i'", 1, strlen("`i'") - 3)
+				g mcgi_`x'_`z' = gi_`x'_`z' - gi_`x'
+				g mcph_`x'_`z' = ph_`x'_`z' - ph_`pline'_`x'
+				g mcpg_`x'_`z' = pg_`x'_`z' - pg_`pline'_`x'
 			} 	
 		}
 
 		* For education and health
 		if "`excluded'" != ""{
 			foreach i in `excluded'{
-				g mcgi_`y'_`i' = gi_`y' - gi_`y'_`i'
-				g mcph_`y'_`i' = ph_`pline'_`y' - ph_`y'_`i'
-				g mcpg_`y'_`i' = pg_`pline'_`y' - pg_`y'_`i'
+				loc z = substr("`i'", 1, strlen("`i'") - 3)
+				g mcgi_`x'_`z' = gi_`x' - gi_`x'_`z'
+				g mcph_`x'_`z' = ph_`pline'_`x' - ph_`x'_`z'
+				g mcpg_`x'_`z' = pg_`pline'_`x' - pg_`x'_`z'
 			} 
 		}
-		loc mcList mcgi_`y'_ mcph_`y'_ mcpg_`y'_
+		loc mcList mcgi_`x'_ mcph_`x'_ mcpg_`x'_
 		disp "`mcList'"
 
 	//reshape long so that you have the variable on the rows, and the type of indicator on the columns 
 	g id = _n  
 	loc n = 0
 	foreach i in `varlist'{
+		loc z = substr("`i'", 1, strlen("`i'") - 3)
 		loc ++n 
 		disp `n'
 		loc lab`n' = "``i'_lbl'"	
 		foreach j in `mcList'{   //foreach variable, and for each indicator (i.e. mcgi, mcph, mcpg)
-			ren (`j'`i') (`j'`n')
+			ren (`j'`z') (`j'`n')
 		} 
 	}
 	disp "`lab1'"
@@ -160,9 +170,9 @@ program define margCont
 
 	lab val instrument instrument_lbl
 	foreach y in `income'{
-		lab var mcgi_`y' "Gini (`y')"
-		lab var mcph_`y' "Headc. (`y')"
-		lab var mcpg_`y' "Gap (`y')"
+		lab var mcgi_`x' "Gini (`x')"
+		lab var mcph_`x' "Headc. (`x')"
+		lab var mcpg_`x' "Gap (`x')"
 	}		
 	drop id 
 		

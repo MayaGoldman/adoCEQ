@@ -10,19 +10,22 @@ program define kakwCoeff
 	loc list `taxes' `transfers'
 
 		foreach y in `income'{
+			loc x = substr("`y'", 1, 2)
 			foreach i in `list'{
 				qui concindexi `i' [aw = `pcweight'], welfarevar(`y') clean
-				matselrc r(CII) C_`y', row(1) col(1)
-				g cc_`y'_`i' = C_`y'[1,1]*100
-				matrix list C_`y'
+				loc z = substr("`i'", 1, strlen("`i'") - 3)
+					matselrc r(CII) C_`z', row(1) col(1)
+					g cc_`x'_`z' = C_`z'[1,1]*100
+					matrix list C_`z'
 			}
 		}
 
 	** Inequality calculation 
 	foreach y in `income'{ 
+		loc x = substr("`y'", 1, 2)
 		qui ineqdeco `y' [w=`pcweight']                 
-		gen gi_`y' = r(gini)*100
-		lab var gi_`y' "Gini (%)"
+		gen gi_`x' = r(gini)*100
+		lab var gi_`x' "Gini (%)"
 	}
 
 	keep if _n == 1
@@ -30,36 +33,39 @@ program define kakwCoeff
 * Kakwani Coefficient
 	loc indlist "" 	
 	foreach y in `income'{
-		* Transfers: Gini - concentration coefficient
-		foreach i in `transfers'{
-			g kk_`y'_`i' = gi_`y' - cc_`y'_`i'	
-		}	
-		
-		* Taxes (Concentration - Gini Coefficient)
-		foreach i in `taxes'{
-			g kk_`y'_`i' = cc_`y'_`i' - gi_`y'
+		loc x = substr("`y'", 1, 2)
+		if `transfers' != ""{ 
+			foreach i in `transfers'{
+				loc z = substr("`i'", 1, strlen("`i'") - 3)
+				g kk_`x'_`z' = gi_`x' - cc_`x'_`z'	
+			}	
 		}
-		loc indlist `indlist' cc_`y'_ kk_`y'_
+		if `taxes' != ""{
+			foreach i in `taxes'{
+				loc z = substr("`i'", 1, strlen("`i'") - 3)
+				g kk_`x'_`z' = cc_`x'_`z' - gi_`x'
+			}
+		}
+		loc indlist `indlist' cc_`x'_ kk_`x'_
 	}
 	disp "`indlist'"
 	g id = 1 
 	
 	//reshape long so that you have the variable on the rows, and the type of indicator on the columns 
-	
-	 
-	disp "`indlist'" 
-	
+		
 	loc n = 0
 	foreach i in `list'{
+		loc z = substr("`i'", 1, strlen("`i'") - 3)
 		loc ++n 
 		disp `n'
 		loc lbl_`n': variable label `i'
 		foreach j in `indlist'{
-			ren (`j'`i') (`j'`n')
+			ren (`j'`z') (`j'`n')
 		} 
 	}
 
 	disp "`indlist'"
+
 	keep id kk_* cc_* 
 	reshape long `indlist', i(id) j(instrument)		
 	ren (*_) (*)
@@ -71,8 +77,9 @@ program define kakwCoeff
 	lab var instrument "Fiscal instrument"
 	lab val instrument instrument_lbl
 	foreach y in `income'{
-		lab var cc_`y' "Concentration coefficient (`y')"
-		lab var kk_`y' "Kakwani Index (`y')"
+		loc x = substr("`y'", 1, 2)
+		lab var cc_`x' "Concentration coefficient (`x')"
+		lab var kk_`x' "Kakwani Index (`x')"
 	}	
 	drop id 
 		
@@ -82,7 +89,8 @@ program define kakwCoeff
 		}
 		if "`exportfile'" != ""{
 			export excel "`exportfile'", sheet("`exportsheet'") first(varl) cell(A1) sheetmodify keepcellfmt
-			if "`exportfile'" == ""{
+		
+		 	if "`exportsheet'" == ""{
 				di in red "Error: Specify a sheet name!"
 				exit 198
 			}

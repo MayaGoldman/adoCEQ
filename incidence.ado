@@ -30,38 +30,41 @@ program define incidence
 	* Collapse the dataset by quantile 
 		loc q "`quantiles'"
 		loc y `income'
-		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`y')
+		loc x = substr("`y'", 1, 2)
+		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`x')
 		
 	if "`rerank'" != "rerank"{
 		loc y `incomeRank'
-		cap drop decile_`y'
-		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`y')
+		loc x = substr("`y'", 1, 2)
+		cap drop decile_`x'
+		quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`x')
 		
 	}
 		di in red "{You have chosen to rank by `y'}"
-		collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`y')
+		collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`x')
 
 		* Incidence
 		insobs 1 
-		replace decile_`y' = 11 if decile_`y' == . 
+		replace decile_`x' = 11 if decile_`x' == . 
 
 		qui sum `y'
 		replace `y' = r(sum) if `y' == . & decile == 11
 		foreach i in `varlist'{
+			loc z = substr("`i'", 1, strlen("`i'") - 3)
 			qui sum `i'
 			replace `i' = r(sum) if `i' == . & decile == 11
 
-			gen inc_`y'_`i' = (`i'/`y')*100
+			gen inc_`x'_`z' = (`i'/`y')*100
 
 			loc j = "``i'_lbl'"
 			disp "`j'"
-			lab var inc_`y'_`i' "`j'"
+			lab var inc_`x'_`z' "`j'"
 		}
-		lab var decile_`y' "Decile `y'"
+		lab var decile_`x' "Decile `x'"
 		keep decile* inc_* 
 
 		lab define decile_lbl 1"Low-income" 10"High-income" 11"National", replace 
-		lab val decile_`y' decile_lbl     
+		lab val decile_`x' decile_lbl     
 	
 	* Save and export the data
 		if "`data'" != ""{
