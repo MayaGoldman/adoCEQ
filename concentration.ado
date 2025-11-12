@@ -4,7 +4,7 @@
 cap program drop concentration 
 program define concentration
 	version 16.0
-	syntax varlist(min = 1) [, rerank Quantiles(integer 10) UNIT(integer 1) PCWeight(string) DATAset(string) EXPortfile(string) consh(string) absvalsh(string) income(varname) incomeRank(varname) restore]
+	syntax varlist(min = 1) [, rerank Quantiles(integer 10) UNIT(integer 1) PCWeight(string) income(varname) incomeRank(varname) DATAset(string) EXPortfile(string) consh(string) absvalsh(string) restore]
 
 		if "`restore'" == "restore"{
 			preserve 
@@ -94,7 +94,7 @@ program define concentration
 			save "`data'", replace
 		}
 		if "`exportfile'" != ""{
-				keep decile_`x' con_*
+				keep decile_`x' con_y*
 				export excel "`exportfile'", sheet("`consh'") first(varl) cell(A1) sheetmodify keepcellfmt
 			use `dataset', clear
 				keep decile_`x' `varlist' 
