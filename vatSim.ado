@@ -1,14 +1,16 @@
 cap program drop vatSim 
 program define vatSim
 version 16.0
-	syntax [, collapse hhid(varname) bDir(varname) dir(varname) bInd(varname) ind(varname) rate(real 0) itemID(varname) infShare(varname) exemptions(varname) purchases(varname) hhweight(varname) dataout(string)]
+	syntax [, collapse hhid(varname) bDir(varname) dir(varname) bInd(varname) ind(varname) rate(real 0) itemID(varname) infShare(varname) exemptions(varname) purchases(varname) hhweight(varname) dataout(string) restore]
  
  **************************************************************************************
  * Step 5: Calculate VAT 
  **************************************************************************************
-preserve
-		assert !mi(`ind') & `ind' >= 0 
-		assert !mi(`dir') & `dir' >= 0
+if "`restore'" == "restore"{
+	preserve	
+}
+		assert !mi(`ind') & `ind' >= -0.0000001 
+		assert !mi(`dir') & `dir' >= -0.0000001
 
 		if "`bInd'" == "" {
 			loc bInd `ind'
@@ -94,7 +96,9 @@ preserve
 
 			save `dataout', replace
 	}
-restore
+if "`restore'" == "restore"{
+	restore	
+}
 
 end 
 
