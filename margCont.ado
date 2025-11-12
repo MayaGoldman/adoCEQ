@@ -78,7 +78,7 @@ program define margCont
 		g gi_`x' = r(gini)*100
 		foreach i in `varlist'{
 			loc z = substr("`i'", 1, strlen("`i'") - 3)
-			qui ineqdeco `y'_`i'_def [w = `pcweight']
+			qui ineqdeco `x'_`z'_d [w = `pcweight']
 			g gi_`x'_`z' = r(gini)*100
 		}
 	}
