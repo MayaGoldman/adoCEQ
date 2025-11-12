@@ -1,13 +1,16 @@
 cap program drop vatIndirect 
 program define vatIndirect
 version 16.0
-	syntax [, rate(real 0) exemptVar(varname) fixedVar(varname) zeroShVar(varname) ioID(varname) dataout(string)] 
+	syntax [, rate(real 0) exemptVar(varname) fixedVar(varname) zeroShVar(varname) ioID(varname) dataout(string) restore] 
 
 
 **************************************************************************************
 * Step 4: Calculate Indirect effects
 **************************************************************************************
-preserve			
+if "`restore'" == "restore"{
+	preserve	
+}
+			
 		* If fixed then sectors cannot be cost-push, nor exempted. 
 		replace `exemptVar' = 0 if `fixedVar' == 1
 		gen cp = 1 - `fixedVar'
@@ -29,15 +32,14 @@ preserve
 		assert rate_IO == 0 if `exemptVar' == 1
 		 
 		order `ioID' `exemptVar' cp rate_IO
-		keep `ioID' sector_* `fixedVar' ex_io cp rate_IO vatable
+		keep `ioID' sector_* `fixedVar' ex_io cp rate_IO vatable 
 		
 		vatpush sector_*, exempt(`exemptVar') costpush(cp) shock(rate_IO) vatable(vatable) gen(vatRateInd)
 
 		duplicates list `ioID' `exemptVar' vatable cp `fixedVar', force
   		isid `ioID' `exemptVar'
 		drop sector_*
-
-		assert vatRateInd >= 0 		
+ 		
 		lab var vatRateInd "Indirect VAT rate"
 		
 		loc x = `rate'*100
@@ -45,7 +47,10 @@ preserve
 		save `dataout', replace
 
 		disp "Rates saved in dataset: `dataout'"	
-restore
+
+if "`restore'" == "restore"{
+	restore	
+}
 
 end 
 
