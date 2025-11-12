@@ -1,8 +1,8 @@
 cap prog drop incomeConcepts 
-prog def incomeConcepts
+prog def incomeConcepts, rclass
 
 	version 16.0
-	syntax [, aggregate(varname) transfersincluded(string) incometype(string) annualizefactor(integer 1) scaler(varname) suffix(string) oldsuffix(string) newsuffix(string) dtxlist(varlist) penlist(varlist) conlist(varlist) dtrlist(varlist) sublist(varlist) itxlist(varlist) edulist(varlist) hltlist(varlist) edufeelist(varlist) hltfeelist(varlist) extravarlist(varlist) globals] 
+	syntax [, aggregate(varname) transfersincluded(string) incometype(string) annualizefactor(integer 1) scaler(varname) suffix(string) oldsuffix(string) newsuffix(string) dtxlist(varlist) penlist(varlist) conlist(varlist) dtrlist(varlist) sublist(varlist) itxlist(varlist) edulist(varlist) hltlist(varlist) edufeelist(varlist) hltfeelist(varlist) extravarlist(varlist) locals] 
 
 
 	loc fisclist `penlist' `conlist' `dtrlist' `dtxlist' `itxlist' `sublist' `edulist' `hltlist' `edufeelist' `hltfeelist' `extravarlist'
@@ -66,13 +66,14 @@ prog def incomeConcepts
 		}
 		loc totlist `totlist' con_`o' 
 
-		if "`dtrlist'" != ""{
+		disp "`dtrlist'"
+		if "`dtrlist'" != "" & "`dtrlist'" != "dtr_`o'"{  //if there are direct transfer variables specified, and there is more than one variable then 
 			cap confirm variable dtr_`o'
-			local num_unique = wordcount("`dtrlist'")
-			if _rc == 0 & "`dtrlist'" != "dtr_`o'"{
+			if _rc == 0 {  //if the variable does exist, then drop it and recreate it 
 				drop dtr_`o'
+				egen dtr_`o' = rowtotal(`dtrlist')
 			}
-			if "`dtrlist'" != "dtr_`o'"{
+			else{  //if the variable doesn't exist, then create it 
 				egen dtr_`o' = rowtotal(`dtrlist')
 			}
 		}
@@ -329,88 +330,100 @@ prog def incomeConcepts
 	cap lab var net_totl_`n'			"Net total benefit"
 	cap lab var net_cash_`n'			"Net cash benefit"
 
-if "`globals'" == "globals"{
-	global inclist ym_`n' yp_`n' yn_`n' yg_`n' yd_`n' ynd_`n' yc_`n' yf_`n' 
+if "`locals'" == "locals"{
+	return local inclist ym_`n' yp_`n' yn_`n' yg_`n' yd_`n' ynd_`n' yc_`n' yf_`n' 
 	local newlist ""
 	foreach v in `penlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global penlist `newlist'
+		return local penlist `newlist'
 	}
 	local newlist ""
 	foreach v in `conlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global conlist `newlist'
+		return local conlist `newlist'
 	}
 	local newlist ""
 	foreach v in `dtrlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global dtrlist `newlist'
+		return local dtrlist `newlist'
 	}
 	local newlist ""
 	foreach v in `dtxlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global dtxlist `newlist'
+		return local dtxlist `newlist'
 	}
 	local newlist ""
 	foreach v in `itxlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global itxlist `newlist'
+		return local itxlist `newlist'
 	}
 	local newlist ""
 	foreach v in `sublist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global sublist `newlist'
+		return local sublist `newlist'
 	}
 	local newlist ""
 	foreach v in `edulist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global edulist `newlist'
+		return local edulist `newlist'
 	}
 	local newlist ""
 	foreach v in `hltlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global hltlist `newlist'
+		return local hltlist `newlist'
 	}
 	local newlist ""
 	foreach v in `edufeelist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global edufeelist `newlist'
+		return local edufeelist `newlist'
 	}
 	local newlist ""
 	foreach v in `hltfeelist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global hltfeelist `newlist'
+		return local hltfeelist `newlist'
 	}
 	local newlist ""
 	foreach v in `extravarlist'{
-		local base = subinstr("`v'", "_hh", "", .)
+		local base = subinstr("`v'", "_`o'", "", .)
 		local newlist "`newlist' `base'_`n'"
-		global extravarlist `newlist'
+		return local extravarlist `newlist'
 	}
-	disp in red "Globals saved."
+	disp in red "Locals saved."
 
-	disp "$inclist"
- 	disp "$penlist"
- 	disp "$conlist"
- 	disp "$dtxlist"
- 	disp "$dtrlist"
- 	disp "$itxlist"
- 	disp "$sublist"
- 	disp "$edulist"
- 	disp "$hltlist"
- 	disp "$edufeelist"
- 	disp "$hltfeelist"
- 	disp "$extravarlist"
+	disp "Locals saved in r(inclist):"
+	disp "`r(inclist)'"
+ 	disp "Locals saved in r(penlist):"
+ 	disp "`r(penlist)'"
+ 	disp "Locals saved in r(conlist):"
+ 	disp "`r(conlist)'"
+ 	disp "Locals saved in r(dtxlist):"
+ 	disp "`r(dtxlist)'"
+ 	disp "Locals saved in r(dtrlist):"
+ 	disp "`r(dtrlist)'"
+ 	disp "Locals saved in r(itxlist):"
+ 	disp "`r(itxlist)'"
+ 	disp "Locals saved in r(sublist):"
+ 	disp "`r(sublist)'"
+ 	disp "Locals saved in r(edulist):"
+ 	disp "`r(edulist)'"
+ 	disp "Locals saved in r(hltlist):"
+ 	disp "`r(hltlist)'"
+ 	disp "Locals saved in r(edufeelist):"
+ 	disp "`r(edufeelist)'"
+ 	disp "Locals saved in r(hltfeelist):"
+ 	disp "`r(hltfeelist)'"
+ 	disp "Locals saved in r(extravarlist):"
+ 	disp "`r(extravarlist)'"
 }
 
 end 
