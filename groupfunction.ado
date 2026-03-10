@@ -3,7 +3,9 @@
 * Minh Nguyen - World Bank Group 
 * Joao Pedro Azevedo - World Bank Group 
 
-
+cap mata: mata drop _TTheil() _fasttheil() _GGini() _fastgini() _fastmean() _fastvariance() ///
+	_fastsum() _fastfirst() _fastmax() _fastmin() _fastcount() _CPBtheil() _CPBtheils() _CPBgini() ///
+		_CPBginis() _CPBfgt() _CPBfgts() _fpctilebig()
 cap prog drop groupfunction
 program define groupfunction, eclass
 	version 11.2, missing

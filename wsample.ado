@@ -2,6 +2,7 @@
 * Paul Corral (World Bank Group - Poverty and Equity Global Practice)
 
 cap prog drop wsample
+cap mata: mata drop _RanDomaSSign()
 program define wsample, eclass
 	version 11.2
 	#delimit;
@@ -38,7 +39,7 @@ if ("`percent'"!=""){
 		dis as error "You have specified a value greater than 100 percent."
 		error 119		
 	}
-	qui: sum `w' if `touse'
+	qui: sum `w'
 	local ccu = r(sum)*(`percent'/100)
 	dis in green "Value for target percent: `ccu'"
 }

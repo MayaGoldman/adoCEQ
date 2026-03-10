@@ -2,6 +2,7 @@
 * Paul Corral - WBG - Equity Policy Lab
 
 cap prog drop costpush
+cap mata: mata drop _indeff()
 cap set matastrict off
 program define costpush, rclass
 	version 11.2

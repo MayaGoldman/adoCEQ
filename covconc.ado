@@ -13,7 +13,7 @@
 *************************
 ** PRELIMINARY PROGRAMS *
 *************************
-
+cap mata: mata drop _fGini_ceq() _fGinis_ceq()
 mata
 	function _fGini_ceq(x,s,w,|r){
 		if (args()==4){

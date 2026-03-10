@@ -3,6 +3,7 @@
 * Daniel Valderrama - WBG - Equity Policy Lab
 
 cap prog drop vatpush
+cap mata: mata drop indirect2()
 cap set matastrict off
 program define vatpush, rclass
 	version 16.0
