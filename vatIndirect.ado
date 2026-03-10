@@ -44,7 +44,7 @@ if "`restore'" == "restore"{
 		
 		loc x = `rate'*100
 		ren vatRateInd vatRateInd_`x'
-		save `dataout', replace
+		save "`dataout'", replace
 
 		disp "Rates saved in dataset: `dataout'"	
 

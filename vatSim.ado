@@ -80,7 +80,7 @@ if "`restore'" == "restore"{
 		* 2. No tax expenditures, nor informality 
 		g itx_vatx_perf_item = purc_net_vat * `rate' 
 
-		save `dataout', replace
+		save "`dataout'", replace
 
 
 	if "`collapse'" == "collapse"{
@@ -94,7 +94,7 @@ if "`restore'" == "restore"{
 			lab var itx_vatx_nexp_hh "VAT: no tax expenditures (SR)"
 			lab var itx_vatx_perf_hh "VAT: no distortions (LR)"
 
-			save `dataout', replace
+			save "`dataout'", replace
 	}
 if "`restore'" == "restore"{
 	restore	
