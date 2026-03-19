@@ -3,7 +3,6 @@
 * Daniel Valderrama - WBG - Equity Policy Lab
 
 cap prog drop vatpush
-cap mata: mata drop indirect2()
 cap set matastrict off
 program define vatpush, rclass
 	version 16.0
@@ -36,7 +35,9 @@ program define vatpush, rclass
 	lab var `gen' "Indirect shock"
 end 
 
-mata:
+cap mata: mata drop indirect2()
+
+mata:	
 	function indirect2(a,cp,shock,vatable,exempt) {
 		
 	alpha_cp=diag(cp) 

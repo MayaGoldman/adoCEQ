@@ -80,8 +80,10 @@ if "`restore'" == "restore"{
 		* 2. No tax expenditures, nor informality 
 		g itx_vatx_perf_item = purc_net_vat * `rate' 
 
+		sort `hhid' `varname'
+	if "`dataout'" == "dataout"{
 		save "`dataout'", replace
-
+	}
 
 	if "`collapse'" == "collapse"{
 			collapse (sum) itx_vat*, by(`hhid' `hhweight')
@@ -93,8 +95,10 @@ if "`restore'" == "restore"{
 			lab var itx_vatx_ninf_hh "VAT: no informality (de jure protective value of exemptions)"
 			lab var itx_vatx_nexp_hh "VAT: no tax expenditures (SR)"
 			lab var itx_vatx_perf_hh "VAT: no distortions (LR)"
-
+			sort `hhid' `varname'
+		if "`dataout'" == "dataout"{
 			save "`dataout'", replace
+		}
 	}
 if "`restore'" == "restore"{
 	restore	

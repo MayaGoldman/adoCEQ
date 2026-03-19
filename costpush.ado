@@ -2,7 +2,6 @@
 * Paul Corral - WBG - Equity Policy Lab
 
 cap prog drop costpush
-cap mata: mata drop _indeff()
 cap set matastrict off
 program define costpush, rclass
 	version 11.2
@@ -38,6 +37,7 @@ qui:gen double `genptot' = .
 mata: st_store(.,tokens("`genptot' `genpind'"),"`touse'", _indeff(_A,_fixed,_dp))
 end
 
+cap mata: mata drop _indeff()
 
 mata
 function _indeff(A,fixed,dp){
