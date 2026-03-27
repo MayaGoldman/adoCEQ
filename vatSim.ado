@@ -78,31 +78,34 @@ if "`restore'" == "restore"{
 		g itx_vatx_nexp_item = frm_purc_net_vat* `rate' 
 
 		* 2. No tax expenditures, nor informality 
-		g itx_vatx_perf_item = purc_net_vat * `rate' 
+		g itx_vatx_perf_item = purc_net_vat * `rate'
+		loc R = `rate'*100
 
-		sort `hhid' `varname'
-	if "`dataout'" == "dataout"{
-		save "`dataout'", replace
-	}
+		lab var itx_vatx_item "VAT (`R'% rate, with informality and exemptions)"
+		lab var itx_vatd_item "Direct VAT (`R'% rate, with informality and exemptions)"										
+		lab var itx_vati_item "Indirect VAT (`R'% rate, with informality and exemptions)"	
+		lab var itx_vatx_ninf_item "VAT: no informality (`R'% rate, de jure protective value of exemptions)"
+		lab var itx_vatx_nexp_item "VAT: no tax expenditures (`R'% rate, SR reforms)"
+		lab var itx_vatx_perf_item "VAT: no distortions (`R'% rate, LR reforms)" 
+
 
 	if "`collapse'" == "collapse"{
 			collapse (sum) itx_vat*, by(`hhid' `hhweight')
 			ren (*_item) (*_hh)
 
-			lab var itx_vatx_hh "VAT"
-			lab var itx_vatd_hh "Direct VAT"										
-			lab var itx_vati_hh "Indirect VAT"	
-			lab var itx_vatx_ninf_hh "VAT: no informality (de jure protective value of exemptions)"
-			lab var itx_vatx_nexp_hh "VAT: no tax expenditures (SR)"
-			lab var itx_vatx_perf_hh "VAT: no distortions (LR)"
-			sort `hhid' `varname'
-		if "`dataout'" == "dataout"{
-			save "`dataout'", replace
-		}
+			lab var itx_vatx_hh "VAT (`R'% rate, with informality and exemptions)"
+			lab var itx_vatd_hh "Direct VAT (`R'% rate, with informality and exemptions)"										
+			lab var itx_vati_hh "Indirect VAT (`R'% rate, with informality and exemptions)"	
+			lab var itx_vatx_ninf_hh "VAT: no informality (`R'% rate, de jure protective value of exemptions)"
+			lab var itx_vatx_nexp_hh "VAT: no tax expenditures (`R'% rate, SR reforms)"
+			lab var itx_vatx_perf_hh "VAT: no distortions (`R'% rate, LR reforms)"
 	}
-if "`restore'" == "restore"{
-	restore	
-}
+	if "`dataout'" == "dataout"{
+		save "`dataout'", replace
+	}
+	if "`restore'" == "restore"{
+		restore	
+	}
 
 end 
 
