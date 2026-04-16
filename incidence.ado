@@ -4,7 +4,7 @@
 cap program drop incidence 
 program define incidence
 	version 16.0
-	syntax varlist(min = 1) [, rerank quantiles(integer 10) pcweight(varname) income(varlist) taxes(varlist) data(string) exportfile(string) exportsheet(string) incomeRank(string) restore]
+	syntax varlist(min = 1) [, rerank quantiles(integer 10) pcweight(varname) income(varname) taxes(varlist) data(string) exportfile(string) exportsheet(string) incomeRank(string) restore]
 
 	if "`restore'" == "restore"{
 			preserve 
@@ -21,7 +21,7 @@ program define incidence
 		}
 
 	* Convert variable names into locals for labeling later on 
-		foreach v in `varlist' {
+		foreach v in `varlist' `income' {
 			local lbl : variable label `v'
 			local `v'_lbl "`lbl'"
 			disp "``v'_lbl'"
@@ -42,14 +42,13 @@ program define incidence
 	}
 		di in red "{You have chosen to rank by `y'}"
 		collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`x')
+		order decile_`x' `income' `varlist' 
 
 		* Incidence
 		insobs 1 
 		replace decile_`x' = 11 if decile_`x' == . 
 
-		qui sum `y'
-		replace `y' = r(sum) if `y' == . & decile == 11
-		foreach i in `varlist'{
+		foreach i in `y' `varlist'{
 			loc z = substr("`i'", 1, strlen("`i'") - 3)
 			qui sum `i'
 			replace `i' = r(sum) if `i' == . & decile == 11
@@ -62,6 +61,7 @@ program define incidence
 		}
 		lab var decile_`x' "Decile `x'"
 		keep decile* inc_* 
+		order decile* inc_`x'_`x'
 
 		lab define decile_lbl 1"Low-income" 10"High-income" 11"National", replace 
 		lab val decile_`x' decile_lbl     

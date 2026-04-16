@@ -326,7 +326,7 @@ prog def incomeConcepts, rclass
 	cap lab var fee_educ_`n' 		"Educ. co-pays"
 	cap lab var fee_hlth_`n' 		"Health co-pays"
 
-	cap lab var net_totl_`n'			"Net total benefit"
+	cap lab var net_totl_`n'			"Net fiscal benefit"
 	cap lab var net_cash_`n'			"Net cash benefit"
 
 if "`globals'" == "globals"{

@@ -17,7 +17,7 @@ program define concentration
 		}
 
 	* Convert variable names into locals for labeling later on 
-		foreach v in `varlist' {
+		foreach v in `varlist' `income'{
 			local lbl : variable label `v'
 			local `v'_lbl "`lbl'"
 			disp "``v'_lbl'"
@@ -40,13 +40,14 @@ program define concentration
 	}
 	quantiles `y' [w = `pcweight'], nq(`q') gencatvar(decile_`x')
 	collapse (sum) `varlist' `income'  [pw=`pcweight'], by(decile_`x')
+	order decile_`x' `income' `varlist' 
 
 		insobs 1
 		replace decile_`x' = 11 if decile_`x' == .
 
 	* Concentration shares
 		loc concentrationlist ""
-		foreach v in `varlist'{
+		foreach v in `income' `varlist'{
 			loc z = substr("`v'", 1, strlen("`v'") - 3)
 			qui sum `v' 
 			loc total = r(sum)
@@ -65,12 +66,12 @@ program define concentration
 		}
 
 			lab var decile_`x' "Decile `y'"
-			keep decile* con_* `varlist'
+			order decile* `income' `varlist' con_`x'_`x' 
 			lab define decile_lbl 1"Low-income" 10"High-income" 11"National", replace 
 			lab val decile_`x' decile_lbl
 
 	* Absolute value
-		foreach v in `varlist'{
+		foreach v in `income' `varlist'{
 			loc lbl : variable label `v'
 			if "`unit'" == "6"{
 				replace `v' = `v'/1e6
@@ -94,11 +95,11 @@ program define concentration
 			save "`data'", replace
 		}
 		if "`exportfile'" != ""{
-				keep decile_`x' con_y*
-				export excel "`exportfile'", sheet("`consh'") first(varl) cell(A1) sheetmodify keepcellfmt
+				keep decile_`x' con_`x'_*
+				export excel using "`exportfile'", sheet("`consh'") first(varl) cell(A1) sheetmodify keepcellfmt
 			use `dataset', clear
-				keep decile_`x' `varlist' 
-				export excel "`exportfile'", sheet("`absvalsh'") first(varl) cell(A1) sheetmodify keepcellfmt
+				keep decile_`x' `income' `varlist'  
+				export excel using "`exportfile'", sheet("`absvalsh'") first(varl) cell(A1) sheetmodify keepcellfmt
 
 			if _rc {
 			    di "Excel export failed. Make sure the workbook is closed."
